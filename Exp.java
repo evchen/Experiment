@@ -15,13 +15,13 @@ public class Exp{
     static HashMap<Integer, HashMap<Integer,Integer>> graph = new  HashMap<Integer, HashMap<Integer,Integer>>();
     static int size = 0;
     static int START_NODE = 1;
-    static HashMap<Integer,Integer> shortest_dist = new HashMap<Integer,Integer>();
+    static HashMap<Integer,Integer> shortest_dist =new HashMap<Integer,Integer>();
 
 
     public static void stream_input(){
 
 
-        String filename = "/home/eve/Documents/Exp/graph1.txt";
+        String filename = "/home/eve/Downloads/moreno_health_health.txt";
         try{
             BufferedReader br = new BufferedReader(new FileReader(filename));
             String line;
@@ -59,16 +59,72 @@ public class Exp{
         }
 	size = shortest_dist.size();
     }
-
+    
     // TODO insert normal queue
-    // TODO test bench mark
-    // TODO insert start node and end node
+    // TODO test bench mark    
+    
     public static void main(String[] args){
 	
 
 	stream_input();
-	MyPQ pq = new MyPQ(size);
+	long start = System.nanoTime();
+	runPQ();
+	long end = System.nanoTime();
+	
+	System.out.println("execution time of Priority QUEUE: "+ (end-start));
+	System.out.println(shortest_dist);
 
+	start = System.nanoTime();
+	runQ();
+	end = System.nanoTime();
+
+	System.out.println(shortest_dist);
+	System.out.println("execution time of Normal QUEUE: "+ (end-start));
+	
+    }
+
+    public static void runQ(){
+	// making a queue
+	HashMap<Integer, Integer> queue = new HashMap<Integer,Integer>(size);
+
+	for(HashMap.Entry<Integer,Integer> entry : shortest_dist.entrySet()){
+	   
+	    queue.put(entry.getKey(),Integer.MAX_VALUE);
+	}
+	queue.put(START_NODE,0);
+	while(!queue.isEmpty()){
+	    /*
+	      get smallest item in the map
+	     */
+	    int min_value =Integer.MAX_VALUE;
+	    int min_key = 0;
+	    for(HashMap.Entry<Integer,Integer> entry : queue.entrySet()){
+		if(entry.getValue() <= min_value){
+		    min_value = entry.getValue();
+		    min_key = entry.getKey();
+		}		
+	    }
+	    shortest_dist.put(min_key,queue.remove(min_key));
+	    if(min_value!=Integer.MAX_VALUE){
+		HashMap<Integer,Integer> neighbours = graph.get(min_key);
+		if(neighbours!=null){
+		    for(HashMap.Entry<Integer, Integer> entry : neighbours.entrySet()){
+			if(queue.containsKey(entry.getKey()) && (entry.getValue() + min_value)< queue.get(entry.getKey()))
+			    queue.put(entry.getKey(), min_value+entry.getValue());
+		    }
+		}
+	    }
+
+	}
+    }
+
+	    
+	
+
+    public static void runPQ(){
+	
+	MyPQ pq = new MyPQ(size);
+	
 	for(HashMap.Entry<Integer,Integer> entry : shortest_dist.entrySet()){
 	   
 	    pq.insert(entry.getKey(),Integer.MAX_VALUE);
@@ -82,21 +138,23 @@ public class Exp{
 	    MyPQ.Node_value_pair pair = pq.pull();
 	    
 	    shortest_dist.put(pair.node, pair.value);
-	    
-	    HashMap<Integer, Integer> neighbours = graph.get(pair.node);
-	    if(neighbours!=null){
-	    
-		for(HashMap.Entry<Integer,Integer> entry : neighbours.entrySet()){
-		    if (pq.contain(entry.getKey())&&(pair.value + entry.getValue() )< pq.getValue(entry.getKey()))
-			pq.edit(entry.getKey(),pair.value+entry.getValue());
 
+	    if(pair.value!=Integer.MAX_VALUE){
+	    
+		HashMap<Integer, Integer> neighbours = graph.get(pair.node);
+		if(neighbours!=null){
+		    
+		    for(HashMap.Entry<Integer,Integer> entry : neighbours.entrySet()){
+			if (pq.contain(entry.getKey())&&(pair.value + entry.getValue() )< pq.getValue(entry.getKey()))
+			    pq.edit(entry.getKey(),pair.value+entry.getValue());
+			
+		    }
 		}
 	    }
 	    //pq.print();
 	}
-	
-	System.out.println(shortest_dist);
-	
+
+
     }
 
     public static class MyPQ{
