@@ -60,7 +60,9 @@ public class Exp{
 	size = shortest_dist.size();
     }
 
-    
+    // TODO insert normal queue
+    // TODO test bench mark
+    // TODO insert start node and end node
     public static void main(String[] args){
 	
 
